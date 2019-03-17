@@ -6,15 +6,13 @@
 	  UTILIZANDO MVC DINAMICO CRIADO A PARTIR 
 	       DA DEFINICAO DO COMPONENTE 
 
--- A agenda depende de outros modelos :
+-- A agenda depende de outros tabelas/modelos (LookUp):
    PAIS 
    ESTADO
 
-
 ====================================================== */
 
-USER Function ZAgenda()
-Local oEnv
+USER Function ZAgenda(aCoords)
 Local oAppAgenda
 Local oAgendaDef
 Local oPaisDef
@@ -24,6 +22,7 @@ Local oModelPais
 Local oModelEstado
 Local oView
 Local oControl
+Local oEnv
 
 // Cria o ambiente 
 oEnv := ZLIBENV():New()
@@ -82,7 +81,12 @@ If !oModelEstado:Init( oEnv )
 Endif
 
 // Cria a View da agenda 
-oView := ZMVCVIEW():New("Agenda de Contatos")
+oView := ZMVCVIEW():New("Agenda de Contatos")  
+
+IF aCoords != NIL
+	// Top, left, bottom, right
+	oView:SetCoords(aCoords)
+Endif
 
 // Cria o controle da agenda   
 // Por enquanto ele faz a ponte direta entre a View e o Modelo 

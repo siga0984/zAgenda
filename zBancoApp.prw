@@ -8,7 +8,7 @@
 
 ====================================================== */
 
-USER Function ZBanco()
+USER Function ZBanco(aCoords)
 Local oEnv
 Local oAppBanco
 Local oDefinition
@@ -48,6 +48,11 @@ Endif
 
 // Cria a View da Banco 
 oView := ZMVCVIEW():New("Cadastro de Bancos")
+
+IF aCoords != NIL
+	// Top, left, bottom, right
+	oView:SetCoords(aCoords)
+Endif
 
 // Cria o controle da Banco   
 // Por enquanto ele faz a ponte direta entre a View e o Modelo 

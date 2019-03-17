@@ -8,7 +8,7 @@
 
 ====================================================== */
 
-USER Function ZEstado()
+USER Function ZEstado(aCoords)
 Local oEnv
 Local oAppEstado
 Local oDefinition
@@ -48,6 +48,11 @@ Endif
 
 // Cria a View da Estado 
 oView := ZMVCVIEW():New("Cadastro de Estados Brasileiros")
+
+IF aCoords != NIL
+	// Top, left, bottom, right
+	oView:SetCoords(aCoords)
+Endif
 
 // Cria o controle da Estado   
 // Por enquanto ele faz a ponte direta entre a View e o Modelo 

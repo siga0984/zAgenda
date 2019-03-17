@@ -8,7 +8,7 @@
 
 ====================================================== */
 
-USER Function ZPais()
+USER Function ZPais(aCoords)
 Local oEnv
 Local oAppPais
 Local oDefinition
@@ -48,6 +48,11 @@ Endif
 
 // Cria a View da Pais 
 oView := ZMVCVIEW():New("Cadastro de Países")
+
+IF aCoords != NIL
+	// Top, left, bottom, right
+	oView:SetCoords(aCoords)
+Endif
 
 // Cria o controle da Pais   
 // Por enquanto ele faz a ponte direta entre a View e o Modelo 
