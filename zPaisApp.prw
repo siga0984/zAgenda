@@ -15,6 +15,7 @@ Local oDefinition
 Local oModel
 Local oView
 Local oControl
+Local oMemCache
 
 // Cria o ambiente 
 oEnv := ZLIBENV():New()
@@ -27,6 +28,13 @@ oDBConn:SETPOOL(.T. , "DB_POOL")
 
 // Guarda a conexao DEFAULT no ambiente
 oEnv:SetObject("DBCONN",oDBConn)
+
+// Cria um objeto de cache em memoria 
+// e guarda no environment
+IF Val(GetSrvProfString("UseMemCache","0")) > 0 
+	oMemCache := ZMEMCACHED():New( "127.0.0.1" , 11211 )
+	oEnv:SetObject("MEMCACHED",oMemCache)
+Endif
 
 // Cria a aplicação Client 
 oAppPais := ZAPP():New()

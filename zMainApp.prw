@@ -9,10 +9,11 @@ Local aAjuda := {}
 
 oSmartApp := ZSMARTAPP():New("Agenda - Sistema de Controle")
 
-aadd(aProgs,{"&Agenda"   ,{ || oSmartApp:CallZApp("U_ZAGENDA") }} )
-aadd(aProgs,{"&Países"   ,{ || oSmartApp:CallZApp("U_ZPAIS")   }} )
-aadd(aProgs,{"&Estados"  ,{ || oSmartApp:CallZApp("U_ZESTADO") }} )
-aadd(aProgs,{"&Bancos"   ,{ || oSmartApp:CallZApp("U_ZBANCO") }} )
+aadd(aProgs,{"&Contatos da Agenda"   ,{ || oSmartApp:CallZApp("U_ZAGENDA") }} )
+aadd(aProgs,{"&Dados Bancários"      ,{ || oSmartApp:CallZApp("U_ZDADOSBANC") }} )
+aadd(aProgs,{"Cadastro de &Países"   ,{ || oSmartApp:CallZApp("U_ZPAIS")   }} )
+aadd(aProgs,{"Cadastro de &Estados"  ,{ || oSmartApp:CallZApp("U_ZESTADO") }} )
+aadd(aProgs,{"Cadastro de &Bancos"   ,{ || oSmartApp:CallZApp("U_ZBANCO") }} )
 aadd(aProgs,{"-" , NIL } )
 aadd(aProgs,{"Sai&r"     ,{ || oSmartApp:Close() }} )
 

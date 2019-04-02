@@ -1,16 +1,6 @@
 #include 'protheus.ch'
 #include 'zlib.ch' 
 
-/* -------------------------------
-  #define ZDEF_ONNEWREC    1
-  #define ZDEF_ONINSERT    2
-  #define ZDEF_ONUPDATE    4
-  #define ZDEF_ONDELETE    8
-  #define ZDEF_ONSEARCH    16
-  #define ZDEF_ONCANCEL    32
-  #define ZDEF_ONGETDATA   64
-------------------------------- */
-
 /* ======================================================
 
 Definição do Componente AGENDA 
@@ -29,16 +19,15 @@ CLASS ZAGENDADEF FROM ZTABLEDEF
 
   METHOD NEW()
 
-  METHOD OnNewRec()
   METHOD OnInsert()
   METHOD OnSearch() 
-  METHOD OnUpdate() 
   METHOD OnGetData() 
   
   METHOD OpenGMap()
   METHOD OpenGMail()
   METHOD Observ()
   METHOD Foto3x4()
+  METHOD DadosBanc()
    
 ENDCLASS 
 
@@ -169,10 +158,8 @@ oFld:SetVisible(.F.)
 // Os eventos recebem o modelo como parametro e são executados em 
 // momemtos especificos durante a utilização da definição pelo modelo  
 
-::AddEvent( ZDEF_ONNEWREC , { | oModel | self:OnNewRec(oModel) } )
-::AddEvent( ZDEF_ONINSERT , { | oModel | self:OnInsert(oModel) } )
-::AddEvent( ZDEF_ONSEARCH , { | oModel | self:OnSearch(oModel) } )
-::AddEvent( ZDEF_ONUPDATE , { | oModel | self:OnUpdate(oModel) } )
+::AddEvent( ZDEF_ONINSERT  , { | oModel | self:OnInsert(oModel) } )
+::AddEvent( ZDEF_ONSEARCH  , { | oModel | self:OnSearch(oModel) } )
 ::AddEvent( ZDEF_ONGETDATA , { | oModel | self:OnGetData(oModel) } )
 
 // Acrescenta ações nomeadas DEFAULT 
@@ -187,22 +174,13 @@ oFld:SetVisible(.F.)
 
 // Acrescenta ações que podem ser disparadas para este componente
 // Nome da ação, Label, CodeBlock
+::AddAction("DADOSB" ,"&Bancos"        , { | oModel | self:DadosBanc(oModel) })
 ::AddAction("GMAPS"  ,"Google &Maps"   , { | oModel | self:OpenGMap(oModel) })
 ::AddAction("GMAIL"  ,"&Google Mail"   , { | oModel | self:OpenGMail(oModel) })
 ::AddAction("OBSERV" ,"&Observações"   , { | oModel | self:Observ(oModel) })
 ::AddAction("FOTO"   ,"&Foto 3x4"      , { | oModel | self:Foto3x4(oModel) })
 
 Return self
-
-
-// ----------------------------------------------------------
-// Método chamado na inserção , na criação 
-// de um novo registro em branco para inserção
-// Se retornar .F. nao permite iniciar a operação 
-
-METHOD OnNewRec() CLASS ZAGENDADEF 
-::oLogger:Write("OnNewRec")
-Return .T. 
 
 
 // ----------------------------------------------------------
@@ -236,21 +214,9 @@ oModel:oObjectTable:SetSQLOrderBy("NOME")
 
 Return .T. 
 
-
-// ----------------------------------------------------------
-// Metodo chamado antes do update do registro
-// Permite consultar ou alterar os valores dos 
-// campos usando FieldGet / FieldPut do Modelo
-
-METHOD OnUpdate() CLASS ZAGENDADEF 
-
-::oLogger:Write("OnUpdate")
-
-Return .T. 
-
 // ----------------------------------------------------------
 
-METHOD OnGetData()  CLASS ZAGENDADEF 
+METHOD OnGetData(oModel)  CLASS ZAGENDADEF 
 
 ::oLogger:Write("OnGetData")
 
@@ -439,4 +405,115 @@ oBmpFoto:SENDBUFFER(cImage, len(cImage), "AGENDA_"+cID , nCRC , .F. )
 ACTIVATE DIALOG oDlg CENTER
 
 Return .T.
+
+// ----------------------------------------------------------
+//
+
+METHOD DadosBanc(oModel) CLASS ZAGENDADEF 
+Local oDBancControl
+Local oDBancDef
+Local oDBancModel
+Local oBancoDef
+LOcal oBancoModel
+Local oEnv
+     
+// Pega o enviroment o modelo 
+oEnv := oModel:GetZLIBEnv()
+     
+// Cria a definição do componente
+// Futuramente será possivel obter a definição do dicionário de dados 
+// A definicao de dados bancarios vai ser criada para ser executada no 
+// conexto da agenda
+
+oDBancDef := ZDadosBancDEF():New("AGENDA")
+oBancoDef := ZBancoDef():New()
+
+// Cria o objeto de Modelo da Banco
+// Passa o nome da tabela e a definição 
+// como parametros
+
+oDBancModel := ZMVCMODEL():New("DADOSBANC",oDBancDef)
+
+// Na inicialização precisa passar o ambiente 
+If !oDBancModel:Init( oEnv )
+	MsgStop( oDBancModel:GetErrorStr() , "Failed to Init Model DADOSBANC" )
+	Return
+Endif
+
+oBancoModel := ZMVCMODEL():NEW("BANCO",oBancoDef)
+
+If !oBancoModel:Init( oEnv )
+	MsgStop( oBancoModel:GetErrorStr() , "Failed to Init Model BANCO" )
+	Return
+Endif
+
+// TODO 
+// Aqui precisa aconteccer uma mágica 
+// A definição original dos dados bancarios 
+// é uma tabela que relaciona um contato da agenda a uma ou mais 
+// contas bancarias, de modo que o contato da agenda é um campo 
+// de LookUp. Porem, como eu estou acessando os dados bancarios a 
+// partir de um dos contatos, o campo do codigo do agendado 
+// deve estar preenchido com o codigo atual, e escondido, para as funcionalidades
+// de busca, insercao e alteracao funcionem. Como a view é montada sobre a definição, 
+// ou eu poderia alterar a definicao antes de chamar este componente -- o que nao 
+// seria nem elegante nem seguro -- oueu crio um definition factory, onde o proprio 
+// componente poderia retornar uma definição adequada para uso com este componente 
+// Isto tambem poderia ser um parametro adicional no construtor do componente
+  
+// Recupera a definiao do campo de contato da agenda dos dados 
+// bancarios e seta o valor default para o contato atual 
+oFldId := oDBancDef:GetFieldDef("IDAGENDA")
+oFldId:SetDefault( oModel:FieldGet("ID") )
+
+// TODO 
+// Estudar uma forma de criar um browse nativo com os campos e dados da tabela 
+// dentro da view padrao, como uma opcao da propria view 
+ 
+
+// Cria a View de Dados Bancarios 
+oDBancView := ZMVCVIEW():New("Dados Bancários")
+
+// Cria o controler dos dados bancarios 
+// e coloca nele os modelos necessarios para uso 
+
+// TODO
+// O modelo de dados bancarios usa o modelo da agenda como lookup 
+// e tamnem usa o modelo de BANCOS, que 
+
+oDBancControl := ZMVCCONTROL():New(oDBancView)
+oDBancControl:AddModel(oDBancModel)           // Acrescenta o modelo de dados bancarios 
+oDBancControl:AddModel(oModel)                // Acrescenta tambem o modelo da agenda
+oDBancControl:AddModel(oBancoModel)           // Acrescenta o modelo de dados bancarios 
+
+// Roda a view de dados bancarios 
+oDBancView:Run()
+
+// Encerra todos os contextos utilizados 
+// -- Ordem inversa de criação -- 
+
+// Encerra o control
+oDBancControl:Done()
+FreeObj(oDBancControl)
+
+// Encerra o modelo 
+oDBancModel:Done()
+FreeObj(oDBancModel)
+
+// Encerra o modelo 
+oBancoModel:Done()
+FreeObj(oBancoModel)
+
+// Encerra a View
+oDBancView:Done()
+FreeObj(oDBancView)
+
+// Encerra a definição 
+oDBancDef:Done()
+FreeObj(oDBancDef)
+
+oBancoDef:Done()
+FreeObj(oBancoDef)
+
+Return
 

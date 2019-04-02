@@ -1,16 +1,6 @@
 #include 'protheus.ch'
 #include 'zlib.ch' 
 
-/* -------------------------------
-  #define ZDEF_ONNEWREC    1
-  #define ZDEF_ONINSERT    2
-  #define ZDEF_ONUPDATE    4
-  #define ZDEF_ONDELETE    8
-  #define ZDEF_ONSEARCH    16
-  #define ZDEF_ONCANCEL    32
-  #define ZDEF_ONGETDATA   64
-------------------------------- */
-
 /* ======================================================
 
 Definição do Componente ESTADOI ( UF ) 
@@ -31,10 +21,7 @@ CLASS ZESTADODEF FROM ZTABLEDEF
 
   METHOD NEW()
 
-  METHOD OnNewRec()
-  METHOD OnInsert()
   METHOD OnSearch() 
-  METHOD OnUpdate() 
   
 ENDCLASS 
 
@@ -74,43 +61,22 @@ oFld:SetRequired(.T.)
 // Índice único pelo campo ID 
 ::SetUnique("UF")
 
+// Seta que esta tabela pode entrar inteira em CACHE 
+::SetUseCache(.T.)
+
 // Agora com a definicao montada, vamos acrescentar alguns eventos
 // Os eventos recebem o modelo como parametro e são executados em 
 // momemtos especificos durante a utilização da definição pelo modelo  
 
-::AddEvent( ZDEF_ONNEWREC , { | oModel | self:OnNewRec(oModel) } )
-::AddEvent( ZDEF_ONINSERT , { | oModel | self:OnInsert(oModel) } )
 ::AddEvent( ZDEF_ONSEARCH , { | oModel | self:OnSearch(oModel) } )
-::AddEvent( ZDEF_ONUPDATE , { | oModel | self:OnUpdate(oModel) } )
 
 // Acrescenta ações nomeadas DEFAULT 
 // As ações default possuem nome reservado 
 // Por hora cadastro de estados somente permite busca 
 
-::AddAction("SEARCH","Pesquisar")
+::AddAction("SEARCH","&Pesquisar")
 
 Return self
-
-
-// ----------------------------------------------------------
-// Método chamado na inserção , na criação 
-// de um novo registro em branco para inserção
-// Se retornar .F. nao permite iniciar a operação 
-
-METHOD OnNewRec() CLASS ZESTADODEF 
-::oLogger:Write("OnNewRec")
-Return .T. 
-
-
-// ----------------------------------------------------------
-// Método chamado na inserção , antes de gravar os dados 
-// Se retornar .F. nao permite realizar a inserção 
-
-METHOD OnInsert(oModel) CLASS ZESTADODEF
-
-::oLogger:Write("OnInsert")
-
-Return .T. 
 
 // ----------------------------------------------------------
 // Método chamado antes da busca, com a tabela aberta 
@@ -125,16 +91,7 @@ oModel:oObjectTable:SetSQLOrderBy("NOME")
 Return .T. 
 
 
-// ----------------------------------------------------------
-// Metodo chamado antes do update do registro
-// Permite consultar ou alterar os valores dos 
-// campos usando FieldGet / FieldPut do Modelo
 
-METHOD OnUpdate() CLASS ZESTADODEF 
-
-::oLogger:Write("OnUpdate")
-
-Return .T. 
 
 
 

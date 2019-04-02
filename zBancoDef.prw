@@ -1,16 +1,6 @@
 #include 'protheus.ch'
 #include 'zlib.ch' 
 
-/* -------------------------------
-  #define ZDEF_ONNEWREC    1
-  #define ZDEF_ONINSERT    2
-  #define ZDEF_ONUPDATE    4
-  #define ZDEF_ONDELETE    8
-  #define ZDEF_ONSEARCH    16
-  #define ZDEF_ONCANCEL    32
-  #define ZDEF_ONGETDATA   64
-------------------------------- */
-
 /* ======================================================
 
 Definição do Componente BANCOS
@@ -31,10 +21,7 @@ CLASS ZBANCODEF FROM ZTABLEDEF
 
   METHOD NEW()
 
-  METHOD OnNewRec()
-  METHOD OnInsert()
   METHOD OnSearch() 
-  METHOD OnUpdate() 
   
 ENDCLASS 
 
@@ -73,39 +60,15 @@ oFld:SetRequired(.T.)
 // Os eventos recebem o modelo como parametro e são executados em 
 // momemtos especificos durante a utilização da definição pelo modelo  
 
-::AddEvent( ZDEF_ONNEWREC , { | oModel | self:OnNewRec(oModel) } )
-::AddEvent( ZDEF_ONINSERT , { | oModel | self:OnInsert(oModel) } )
 ::AddEvent( ZDEF_ONSEARCH , { | oModel | self:OnSearch(oModel) } )
-::AddEvent( ZDEF_ONUPDATE , { | oModel | self:OnUpdate(oModel) } )
 
 // Acrescenta ações nomeadas DEFAULT 
 // As ações default possuem nome reservado 
 // Por hora cadastro de países somente permite busca 
 
-::AddAction("SEARCH","Pesquisar")
+::AddAction("SEARCH","&Pesquisar")
 
 Return self
-
-
-// ----------------------------------------------------------
-// Método chamado na inserção , na criação 
-// de um novo registro em branco para inserção
-// Se retornar .F. nao permite iniciar a operação 
-
-METHOD OnNewRec() CLASS ZBANCODEF 
-::oLogger:Write("OnNewRec")
-Return .T. 
-
-
-// ----------------------------------------------------------
-// Método chamado na inserção , antes de gravar os dados 
-// Se retornar .F. nao permite realizar a inserção 
-
-METHOD OnInsert(oModel) CLASS ZBANCODEF
-
-::oLogger:Write("OnInsert")
-
-Return .T. 
 
 // ----------------------------------------------------------
 // Método chamado antes da busca, com a tabela aberta 
@@ -120,16 +83,9 @@ oModel:oObjectTable:SetSQLOrderBy("NOME")
 Return .T. 
 
 
-// ----------------------------------------------------------
-// Metodo chamado antes do update do registro
-// Permite consultar ou alterar os valores dos 
-// campos usando FieldGet / FieldPut do Modelo
 
-METHOD OnUpdate() CLASS ZBANCODEF 
 
-::oLogger:Write("OnUpdate")
 
-Return .T. 
 
 
 
