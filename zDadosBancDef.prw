@@ -14,6 +14,8 @@ CLASS ZDADOSBANCDEF FROM ZTABLEDEF
   DATA oLogger         // Objeto de log 
 
   METHOD NEW(cContexto)
+  METHOD TableName()
+  METHOD GetTitle()
 
   METHOD OnInsert()
   METHOD OnSearch() 
@@ -25,7 +27,7 @@ ENDCLASS
 // Cria a definição do componente Agenda 
 
 METHOD NEW(cContexto) CLASS ZDADOSBANCDEF
-_Super:New("DEF_DADOSBANC")
+_Super:New("ZDADOSBANCDEF")
 
 If cContexto = NIL 
 	cContexto := "DEFAULT"
@@ -37,7 +39,7 @@ Endif
 // Estas definições serão usadas pelos demais componentes
 
 ::oLogger := ZLOGGER():New("ZDADOSBANCDEF")
-::oLogger:Write("NEW","Create Component Definition [DEF_DADOSBANC]")
+::oLogger:Write("NEW","Create Component Definition [ZDADOSBANCDEF]")
 
 oFld := ::AddFieldDef("IDDADOSBAN"  ,"C",06,0)
 oFld:SetLabel("Id","Identificador do Dado Bancário")
@@ -50,6 +52,8 @@ oFld:SetLabel("ID","Identificador do Contato da Agenda")
 oFld:SetPicture("999999")
 oFld:SetRequired(.T.)  
 oFld:SetLookUp("AGENDA","ID","NOME")
+
+::AddAuxDef("ZAGENDADEF")
 
 If cContexto = 'AGENDA'
 	oFld:SetVisible(.F.) 
@@ -64,6 +68,8 @@ oFld:SetLabel("Banco","Código do Banco")
 oFld:SetPicture("@!")
 oFld:SetRequired(.T.)
 oFld:SetLookUp("BANCO","ID","NOME")
+
+::AddAuxDef("ZBANCODEF")
 
 oFld := ::AddFieldDef("AGENCIA"  ,"C",08,0)
 oFld:SetLabel("Agência","Número da Agência Bancária")
@@ -101,6 +107,17 @@ oFld:SetLabel("Observações","Observações sobre esta Conta Bancária")
 
 Return self
 
+
+// ----------------------------------------------------------
+
+METHOD TableName() CLASS ZDADOSBANCDEF
+Return "DADOSBANC"
+
+
+// ----------------------------------------------------------
+
+METHOD GetTitle() CLASS ZDADOSBANCDEF 
+Return "Dados Bancários"
 
 // ----------------------------------------------------------
 // Método chamado na inserção , antes de gravar os dados 

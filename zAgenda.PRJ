@@ -1,0 +1,61 @@
+Group zAgenda
+   Version=7.0
+   VSSDB=
+   HasProperties=1
+   Properties
+      BeforeApply=
+      AfterApply=
+      Icon=
+      ID=
+      Version=
+      PalmName=
+      OutPut=
+   End
+   ProjectsCount=1
+   Project zAgenda
+      FoldersCount=1
+      Folder Fontes
+         VSSPath=Fontes
+         FilesCount=11
+         File \Projetos\zAgenda\zAgendaApp.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zAgendaDef.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zBancoApp.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zBancoDef.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zDadosBancApp.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zDadosBancDef.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zEstadoApp.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zEstadoDef.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zMainApp.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zPaisApp.prw
+             Type=T
+         End
+         File \Projetos\zAgenda\zPaisDef.prw
+             Type=T
+         End
+      End
+   End
+   BatchBuild_Item0=Fontes · ADVPLTESTS_TOP_ADS
+   BatchBuild_Item1=Fontes · ADVPLTESTS_ADS_ADS
+   BatchBuild_Item2=Fontes · ADVPLTESTS_CTREE_CTREE
+   BatchBuild_Item3=Fontes · ADVPLTESTS_BTV_BTV
+   BatchBuild_Item4=Fontes · ADVPLTESTS_TOP_CTREE
+   BatchBuild_Item5=Fontes · ADVPLTESTS_DBF_ADS
+End

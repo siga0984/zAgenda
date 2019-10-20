@@ -20,6 +20,8 @@ CLASS ZESTADODEF FROM ZTABLEDEF
   DATA oLogger         // Objeto de log 
 
   METHOD NEW()
+  METHOD TableName()
+  METHOD GetTitle()
 
   METHOD OnSearch() 
   
@@ -27,10 +29,10 @@ ENDCLASS
 
 
 // ------------------------------------------------------
-// Cria a definição do componente Agenda 
+// Cria a definição do componente 
 
 METHOD NEW() CLASS ZESTADODEF
-_Super:New("DEF_ESTADO")
+_Super:New("ZESTADODEF")
 
 // Cria a definição do componente Estado
 
@@ -38,7 +40,7 @@ _Super:New("DEF_ESTADO")
 // Estas definições serão usadas pelos demais componentes
 
 ::oLogger := ZLOGGER():New("ZESTADODEF")
-::oLogger:Write("NEW","Create Component Definition [DEF_ESTADO]")
+::oLogger:Write("NEW","Create Component Definition [ZESTADODEF]")
 
 oFld := ::AddFieldDef("UF"    ,"C",2,0)
 oFld:SetLabel("UF","Sigla identificadora do Estado (UF)")
@@ -77,6 +79,17 @@ oFld:SetRequired(.T.)
 ::AddAction("SEARCH","&Pesquisar")
 
 Return self
+            
+// ----------------------------------------------------------
+
+METHOD TableName() CLASS ZESTADODEF 
+Return "ESTADO"
+
+// ----------------------------------------------------------
+
+METHOD GetTitle() CLASS ZESTADODEF 
+Return "Cadastro de Estados Brasileiros"
+
 
 // ----------------------------------------------------------
 // Método chamado antes da busca, com a tabela aberta 
@@ -102,19 +115,23 @@ Return .T.
 
 User Function ImpUF()
 Local oEnv
-Local oDBConn
 Local cFile := 'ESTADO'
 Local oTable
-Local oDef
+Local oEstadoDef
+Local oDBConn
+Local oDefFactory
 
 // Cria o ambiente 
 oEnv := ZLIBENV():New()
 oEnv:SetEnv()
 
-// Cria a conexao com o banco de dados
-oDBConn  := ZDBACCESS():New()
+// Cria e Guarda o FACTORY de Definições no ambiente
+oDefFactory := ZDEFFACTORY():New()
+oEnv:SetObject("ZDEFFACTORY",oDefFactory)
 
+// Cria a conexao com o banco de dados
 // Guarda a conexao DEFAULT no ambiente
+oDBConn  := ZDBACCESS():New()
 oEnv:SetObject("DBCONN",oDBConn)
 
 // Conecta no DBAccess
@@ -129,9 +146,9 @@ Endif
 oTable := oDBConn:GetTable(cFile)
 
 If !oTable:Exists()
-	oDef := ZESTADODEF():New()
-	oTable:Create( oDef:GetStruct() )
-	MsgInfo("TAbela [ESTADOS] criada")
+	oEstadoDef := oDefFactory:GetNewDef("ZESTADODEF")
+	oTable:Create( oEstadoDef:GetStruct() )
+	MsgInfo("Tabela [ESTADOS] criada")
 	
 Endif
 

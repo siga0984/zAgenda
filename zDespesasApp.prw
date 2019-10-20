@@ -1,18 +1,18 @@
 
 /* ======================================================
 
-		CADASTRO DE Bancos VIA SMARTCLIENT
+		CADASTRO DE DEDSPESAS VIA SMARTCLIENT
 		
 	  UTILIZANDO MVC DINAMICO CRIADO A PARTIR 
 	       DA DEFINICAO DO COMPONENTE 
 
 ====================================================== */
 
-USER Function ZBanco(aCoords)
+USER Function ZDespesas(aCoords)
 Local oApp := ZAUTOAPP():New()
 
 // Roda o MVC baseado na definicao 
-oApp:RunMVC("ZBANCODEF",aCoords)
+oApp:RunMVC("ZDESPESASDEF",aCoords)
 
 Return
 

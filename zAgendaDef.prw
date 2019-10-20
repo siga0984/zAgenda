@@ -1,6 +1,13 @@
 #include 'protheus.ch'
 #include 'zlib.ch' 
 
+#define RED_DESIGN 
+// #define BLUE_DESIGN
+// #define GREEN_DESIGN 
+// #define OLD_DESIGN 
+
+#include  'zmvcview.ch'
+
 /* ======================================================
 
 Definição do Componente AGENDA 
@@ -18,7 +25,9 @@ CLASS ZAGENDADEF FROM ZTABLEDEF
   DATA oLogger         // Objeto de log 
 
   METHOD NEW()
-
+  METHOD TableName()
+  METHOD GetTitle()
+  
   METHOD OnInsert()
   METHOD OnSearch() 
   METHOD OnGetData() 
@@ -33,18 +42,16 @@ ENDCLASS
 
 
 // ------------------------------------------------------
-// Cria a definição do componente Agenda 
+// Cria a definição do componente 
 
 METHOD NEW() CLASS ZAGENDADEF
-_Super:New("DEF_AGENDA")
-
-// Cria a definição do componente Agenda
+_Super:New("ZAGENDADEF")
 
 // Criar as definições extendidas de cada campo 
 // Estas definições serão usadas pelos demais componentes
 
 ::oLogger := ZLOGGER():New("ZAGENDADEF")
-::oLogger:Write("NEW","Create Component Definition [DEF_AGENDA]")
+::oLogger:Write("NEW","Create Component Definition [ZAGENDADEF]")
 
 oFld := ::AddFieldDef("ID"    ,"C",06,0)
 oFld:SetLabel("ID","Número identificador do Contato da Agenda")
@@ -81,6 +88,8 @@ oFld := ::AddFieldDef("UF"    ,"C",02,0)
 oFld:SetLabel("UF","Estado (Unidade da Federação) do Endereço do Contato da Agenda")
 oFld:SetPicture("!!")
 oFld:SetLookUp("ESTADO","UF","NOME")
+
+::AddAuxDef("ZESTADODEF")
  
 oFld := ::AddFieldDef("CEP"   ,"C",08,0)
 oFld:SetLabel("CEP","Código de Endereçamento Postal do Endereço do Contato da Agenda")
@@ -90,6 +99,8 @@ oFld := ::AddFieldDef("NACION","C",3,0)
 oFld:SetLabel("Nacionalidade","País de Origem / Nacionalidade do Contato da Agenda")
 oFld:SetPicture("!!!")
 oFld:SetLookUp("PAIS","ID","NOME")
+
+::AddAuxDef("ZPAISDEF")
 
 oFld := ::AddFieldDef("DTNASC"   ,"D",8,0)
 oFld:SetLabel("Nascimento","Data de Nascimento do Contato da Agenda")
@@ -181,6 +192,16 @@ oFld:SetVisible(.F.)
 ::AddAction("FOTO"   ,"&Foto 3x4"      , { | oModel | self:Foto3x4(oModel) })
 
 Return self
+
+// ----------------------------------------------------------
+
+METHOD TableName() CLASS ZAGENDADEF 
+Return "AGENDA"
+
+// ----------------------------------------------------------
+
+METHOD GetTitle() CLASS ZAGENDADEF 
+Return "Agenda de Contatos"
 
 
 // ----------------------------------------------------------
@@ -335,26 +356,28 @@ Local cObs
   
 cObs := oModel:FieldGet("OBSERV")
 
-DEFINE DIALOG oDlg TITLE "Observações" FROM 0,0 TO 600,800 PIXEL
+DEFINE DIALOG oDlg TITLE "Observações" FROM 0,0 TO 600,800 COLOR VIEW_FR_COLOR,VIEW_BG_COLOR PIXEL
 oDlg:lEscClose := .T.
 
 @ 0,0 MSPANEL oPanelObs OF oDlg SIZE 800,20 
 oPanelObs:ALIGN := CONTROL_ALIGN_ALLCLIENT
 
-@ 0,0 MSPANEL oPanelBtn OF oDlg SIZE 800,20 COLOR CLR_BLACK,CLR_GRAY 
+@ 0,0 MSPANEL oPanelBtn OF oDlg SIZE 800,20 COLOR VIEW_FR_COLOR,VIEW_BG_COLOR
 oPanelBtn:ALIGN := CONTROL_ALIGN_BOTTOM
 
 @   0,0 GET oGet VAR cObs MULTILINE ;
-	SIZE 800 ,600 OF oPanelObs PIXEL
+	SIZE 800 ,600 COLOR VIEW_GETFR_COLOR,VIEW_GETBG_COLOR OF oPanelObs PIXEL
 
 oGet:ALIGN := CONTROL_ALIGN_ALLCLIENT
 oGet:L3DLOOK := .T.
                              
 @ 2,230  BUTTON oBtnOk PROMPT "Confirmar" SIZE 60,15 ;
 	ACTION ( lSaveObs := .T. ,oDlg:End() ) OF oPanelBtn PIXEL
+oBtnOk:SetColor(VIEW_BTNFR_COLOR,VIEW_BTNBG_COLOR)
 
 @ 2,330  BUTTON oBtnCanc PROMPT "Voltar" SIZE 60,15 ;
 	ACTION ( oDlg:End() ) OF oPanelBtn PIXEL
+oBtnCanc:SetColor(VIEW_BTNFR_COLOR,VIEW_BTNBG_COLOR)
 
 ACTIVATE DIALOG oDlg CENTER
 
@@ -419,20 +442,25 @@ Local oEnv
      
 // Pega o enviroment o modelo 
 oEnv := oModel:GetZLIBEnv()
+
+// Pega os factories de definicao e modelo do ambiente  
+oDefFactory := oEnv:GetObject("ZDEFFACTORY")
+oModelFactory := oEnv:GetObject("ZMODELFACTORY")
+oViewFactory := oEnv:GetObject("ZVIEWFACTORY")
+oCtrlFactory := oEnv:GetObject("ZCONTROLFACTORY")
      
 // Cria a definição do componente
 // Futuramente será possivel obter a definição do dicionário de dados 
 // A definicao de dados bancarios vai ser criada para ser executada no 
 // conexto da agenda
 
-oDBancDef := ZDadosBancDEF():New("AGENDA")
-oBancoDef := ZBancoDef():New()
+oDBancDef := oDefFactory:GetNewDef("ZDADOSBANCDEF","AGENDA")
+oBancoDef := oDefFactory:GetNewDef("ZBANCODEF")
 
 // Cria o objeto de Modelo da Banco
-// Passa o nome da tabela e a definição 
-// como parametros
+// Passa a definição como parâmetro
 
-oDBancModel := ZMVCMODEL():New("DADOSBANC",oDBancDef)
+oDBancModel := oModelFactory:GetNewModel(oDBancDef)
 
 // Na inicialização precisa passar o ambiente 
 If !oDBancModel:Init( oEnv )
@@ -440,7 +468,7 @@ If !oDBancModel:Init( oEnv )
 	Return
 Endif
 
-oBancoModel := ZMVCMODEL():NEW("BANCO",oBancoDef)
+oBancoModel := oModelFactory:GetNewModel(oBancoDef)
 
 If !oBancoModel:Init( oEnv )
 	MsgStop( oBancoModel:GetErrorStr() , "Failed to Init Model BANCO" )
@@ -461,7 +489,7 @@ Endif
 // componente poderia retornar uma definição adequada para uso com este componente 
 // Isto tambem poderia ser um parametro adicional no construtor do componente
   
-// Recupera a definiao do campo de contato da agenda dos dados 
+// Recupera a definição do campo de contato da agenda dos dados 
 // bancarios e seta o valor default para o contato atual 
 oFldId := oDBancDef:GetFieldDef("IDAGENDA")
 oFldId:SetDefault( oModel:FieldGet("ID") )
@@ -472,7 +500,7 @@ oFldId:SetDefault( oModel:FieldGet("ID") )
  
 
 // Cria a View de Dados Bancarios 
-oDBancView := ZMVCVIEW():New("Dados Bancários")
+oDBancView := oViewFactory:GetNewView(oDBancDef)
 
 // Cria o controler dos dados bancarios 
 // e coloca nele os modelos necessarios para uso 
@@ -481,7 +509,7 @@ oDBancView := ZMVCVIEW():New("Dados Bancários")
 // O modelo de dados bancarios usa o modelo da agenda como lookup 
 // e tamnem usa o modelo de BANCOS, que 
 
-oDBancControl := ZMVCCONTROL():New(oDBancView)
+oDBancControl := oCtrlFactory:GetNewControl(oDBancView)
 oDBancControl:AddModel(oDBancModel)           // Acrescenta o modelo de dados bancarios 
 oDBancControl:AddModel(oModel)                // Acrescenta tambem o modelo da agenda
 oDBancControl:AddModel(oBancoModel)           // Acrescenta o modelo de dados bancarios 

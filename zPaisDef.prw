@@ -20,6 +20,8 @@ CLASS ZPAISDEF FROM ZTABLEDEF
   DATA oLogger         // Objeto de log 
 
   METHOD NEW()
+  METHOD TableName()
+  METHOD GetTitle()
 
   METHOD OnSearch() 
   
@@ -27,10 +29,10 @@ ENDCLASS
 
 
 // ------------------------------------------------------
-// Cria a definição do componente Agenda 
+// Cria a definição do componente 
 
 METHOD NEW() CLASS ZPAISDEF
-_Super:New("DEF_PAIS")
+_Super:New("ZPAISDEF")
 
 // Cria a definição do componente Pais
 
@@ -38,7 +40,7 @@ _Super:New("DEF_PAIS")
 // Estas definições serão usadas pelos demais componentes
 
 ::oLogger := ZLOGGER():New("ZPAISDEF")
-::oLogger:Write("NEW","Create Component Definition [DEF_PAIS]")
+::oLogger:Write("NEW","Create Component Definition [ZPAISDEF]")
 
 oFld := ::AddFieldDef("ID"    ,"C",03,0)
 oFld:SetLabel("ID","Identificador de ttês letras do país -- Especificação ISO 3166-1 alfa-3")
@@ -72,6 +74,16 @@ oFld:SetRequired(.T.)
 ::AddAction("SEARCH","&Pesquisar")
 
 Return self
+
+// ----------------------------------------------------------
+
+METHOD TableName() CLASS ZPAISDEF 
+Return "PAIS"
+
+// ----------------------------------------------------------
+
+METHOD GetTitle() CLASS ZPAISDEF 
+Return "Cadastro de Países"
 
 // ----------------------------------------------------------
 // Método chamado antes da busca, com a tabela aberta 

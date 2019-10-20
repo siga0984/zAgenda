@@ -20,6 +20,8 @@ CLASS ZBANCODEF FROM ZTABLEDEF
   DATA oLogger         // Objeto de log 
 
   METHOD NEW()
+  METHOD TableName()
+  METHOD GetTitle()
 
   METHOD OnSearch() 
   
@@ -30,7 +32,7 @@ ENDCLASS
 // Cria a definição do componente Agenda 
 
 METHOD NEW() CLASS ZBANCODEF
-_Super:New("DEF_BANCO")
+_Super:New("ZBANCODEF")
 
 // Cria a definição do componente Banco
 
@@ -38,7 +40,7 @@ _Super:New("DEF_BANCO")
 // Estas definições serão usadas pelos demais componentes
 
 ::oLogger := ZLOGGER():New("ZBANCODEF")
-::oLogger:Write("NEW","Create Component Definition [DEF_BANCO]")
+::oLogger:Write("NEW","Create Component Definition [ZBANCODEF]")
 
 oFld := ::AddFieldDef("ID"    ,"C",05,0)
 oFld:SetLabel("ID","Identificador ou Código Alfanumérico do Banco")
@@ -70,6 +72,17 @@ oFld:SetRequired(.T.)
 
 Return self
 
+
+// ----------------------------------------------------------
+
+METHOD TableName() CLASS ZBANCODEF 
+Return "BANCO"
+
+// ----------------------------------------------------------
+
+METHOD GetTitle() CLASS ZBANCODEF 
+Return "Cadastro de Bancos"
+
 // ----------------------------------------------------------
 // Método chamado antes da busca, com a tabela aberta 
 
@@ -98,11 +111,17 @@ User Function ImpBanco()
 Local oEnv
 Local oDBConn
 Local cFile := 'BANCO'
-Local oTable
+Local oTable  
+Local oDefFactory
+Local oBancoDef
 
 // Cria o ambiente 
 oEnv := ZLIBENV():New()
 oEnv:SetEnv()
+
+// Cria e Guarda o FACTORY de Definições no ambiente
+oDefFactory := ZDEFFACTORY():New()
+oEnv:SetObject("ZDEFFACTORY",oDefFactory)
 
 // Cria a conexao com o banco de dados
 oDBConn  := ZDBACCESS():New()
@@ -126,8 +145,8 @@ oTable := oDBConn:GetTable(cFile)
 
 If !oTable:Exists()  
 
-	oDef := ZBANCODEF():New()
-	oTable:Create( oDef:GetStruct() )
+	oBancoDef := oDefFactory:GetNewDef("ZBANCODEF")
+	oTable:Create( oBancoDef:GetStruct() )
 	MsgInfo("Tabela [BANCO] criada")
 	
 Endif
@@ -182,7 +201,6 @@ oDBConn:Disconnect()
 // Encerra o ambiente -- Junto com os objetos amarrados nele 
 oEnv:Done()
 FreeObj(oEnv)
-
 
 Return
 
